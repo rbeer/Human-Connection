@@ -53,7 +53,9 @@ export const minimisedUserQuery = () => {
         id
         slug
         name
-        avatar
+        avatar {
+          url
+        }
       }
     }
   `
@@ -245,7 +247,9 @@ export const updateUserMutation = () => {
         showShoutsPublicly
         locale
         termsAndConditionsAgreedVersion
-        avatar
+        avatar {
+          url
+        }
       }
     }
   `

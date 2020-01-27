@@ -6,7 +6,7 @@
       'post-card': true,
       'disabled-content': post.disabled,
       '--pinned': isPinned,
-      '--blur-image': post.imageBlurred,
+      '--blur-image': post.image && post.image.blurred,
     }"
   >
     <!-- Post Link Target -->
@@ -105,8 +105,10 @@ export default {
     },
   },
   mounted() {
+    const { image } = this.post
+    if (!image) return
     const width = this.$el.offsetWidth
-    const height = Math.min(width / this.post.imageAspectRatio, 2000)
+    const height = Math.min(width / image.aspectRatio, 2000)
     const imageElement = this.$el.querySelector('.ds-card-image')
     if (imageElement) {
       imageElement.style.height = `${height}px`

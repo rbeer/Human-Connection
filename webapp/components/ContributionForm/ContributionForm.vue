@@ -153,12 +153,9 @@ export default {
     const formDefaults = {
       title: '',
       content: '',
-      teaserImage: null,
-      imageAspectRatio: null,
       image: null,
       language: null,
       categoryIds: [],
-      blurImage: false,
     }
 
     let id = null
@@ -169,14 +166,12 @@ export default {
       slug = this.contribution.slug
       form.title = this.contribution.title
       form.content = this.contribution.content
-      form.image = this.contribution.image
+      form.image = this.contribution.image || {}
       form.language =
         this.contribution && this.contribution.language
           ? languageOptions.find(o => this.contribution.language === o.value)
           : null
       form.categoryIds = this.categoryIds(this.contribution.categories)
-      form.imageAspectRatio = this.contribution.imageAspectRatio
-      form.blurImage = this.contribution.imageBlurred
     }
 
     return {
@@ -227,11 +222,10 @@ export default {
         title,
         content,
         image,
-        teaserImage,
-        imageAspectRatio,
         categoryIds,
         blurImage,
       } = this.form
+      if (image) image.blurred = blurImage
       this.loading = true
       this.$apollo
         .mutate({
@@ -243,9 +237,6 @@ export default {
             categoryIds,
             language,
             image,
-            imageUpload: teaserImage,
-            imageBlurred: blurImage,
-            imageAspectRatio,
           },
         })
         .then(({ data }) => {
@@ -267,10 +258,16 @@ export default {
       this.$refs.contributionForm.update('content', value)
     },
     addTeaserImage(file) {
-      this.form.teaserImage = file
+      this.form.image = {
+        ...this.form.image,
+        upload: file,
+      }
     },
     addImageAspectRatio(aspectRatio) {
-      this.form.imageAspectRatio = aspectRatio
+      this.form.image = {
+        ...this.form.image,
+        aspectRatio,
+      }
     },
     categoryIds(categories) {
       return categories.map(c => c.id)

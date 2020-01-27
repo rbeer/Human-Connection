@@ -82,7 +82,9 @@ describe('UserAvatar.vue', () => {
         propsData = {
           user: {
             name: 'Not Anonymous',
-            avatar: 'https://s3.amazonaws.com/uifaces/faces/twitter/sawalazar/128.jpg',
+            avatar: {
+              url: 'https://s3.amazonaws.com/uifaces/faces/twitter/sawalazar/128.jpg',
+            },
           },
         }
         wrapper = Wrapper()

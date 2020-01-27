@@ -80,7 +80,9 @@ export const actions = {
             name
             slug
             email
-            avatar
+            avatar {
+              url
+            }
             role
             about
             locationName

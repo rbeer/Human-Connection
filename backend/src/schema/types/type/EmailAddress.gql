@@ -14,7 +14,6 @@ type Mutation {
     password: String!
     slug: String
     avatar: String
-    coverImg: String
     avatarUpload: Upload
     locationName: String
     about: String

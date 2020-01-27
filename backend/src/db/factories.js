@@ -39,6 +39,14 @@ Factory.define('badge')
     return neode.create('Badge', buildObject)
   })
 
+Factory.define('image')
+  .attr('url', faker.image.unsplash.imageUrl)
+  .attr('aspectRatio', 1)
+  .attr('alt', faker.lorem.sentence)
+  .after((buildObject, options) => {
+    return neode.create('Image', buildObject)
+  })
+
 Factory.define('userWithoutEmailAddress')
   .option('password', '1234')
   .attrs({
@@ -46,7 +54,6 @@ Factory.define('userWithoutEmailAddress')
     name: faker.name.findName,
     password: '1234',
     role: 'user',
-    avatar: faker.internet.avatar,
     about: faker.lorem.paragraph,
     termsAndConditionsAgreedVersion: '0.0.1',
     termsAndConditionsAgreedAt: '2019-08-01T10:47:19.212Z',
@@ -67,12 +74,19 @@ Factory.define('userWithoutEmailAddress')
 Factory.define('user')
   .extend('userWithoutEmailAddress')
   .option('email', faker.internet.exampleEmail)
+  .option('avatar', () =>
+    Factory.build('image', {
+      url: faker.internet.avatar(),
+    }),
+  )
   .after(async (buildObject, options) => {
-    const [user, email] = await Promise.all([
+    const [user, email, avatar] = await Promise.all([
       buildObject,
       neode.create('EmailAddress', { email: options.email }),
+      options.avatar,
     ])
     await Promise.all([user.relateTo(email, 'primaryEmail'), email.relateTo(user, 'belongsTo')])
+    if (avatar) await user.relateTo(avatar, 'avatar')
     return user
   })
 
@@ -93,11 +107,11 @@ Factory.define('post')
     return Factory.build('user')
   })
   .option('pinnedBy', null)
+  .option('image', () => Factory.build('image'))
   .attrs({
     id: uuid,
     title: faker.lorem.sentence,
     content: faker.lorem.paragraphs,
-    image: faker.image.unsplash.imageUrl,
     visibility: 'public',
     deleted: false,
     imageBlurred: false,
@@ -117,9 +131,10 @@ Factory.define('post')
     return language || 'en'
   })
   .after(async (buildObject, options) => {
-    const [post, author, categories, tags] = await Promise.all([
+    const [post, author, image, categories, tags] = await Promise.all([
       neode.create('Post', buildObject),
       options.author,
+      options.image,
       options.categories,
       options.tags,
     ])
@@ -128,6 +143,7 @@ Factory.define('post')
       Promise.all(categories.map(c => c.relateTo(post, 'post'))),
       Promise.all(tags.map(t => t.relateTo(post, 'post'))),
     ])
+    if (image) await post.relateTo(image, 'image')
     if (buildObject.pinned) {
       const pinnedBy = await (options.pinnedBy || Factory.build('user', { role: 'admin' }))
       await pinnedBy.relateTo(post, 'pinned')

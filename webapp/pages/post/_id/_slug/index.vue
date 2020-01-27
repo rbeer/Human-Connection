@@ -10,7 +10,7 @@
         '--blur-image': blurred,
       }"
     >
-      <aside v-show="post.imageBlurred" class="blur-toggle">
+      <aside v-show="post.image && post.image.blurred" class="blur-toggle">
         <img v-show="blurred" :src="post.image | proxyApiUrl" class="preview" />
         <base-button
           :icon="blurred ? 'eye' : 'eye-slash'"
@@ -236,8 +236,10 @@ export default {
       update({ Post }) {
         this.post = Post[0] || {}
         this.title = this.post.title
-        this.blurred = this.post.imageBlurred
         this.postAuthor = this.post.author
+        const { image } = this.post
+        if (!image) return
+        this.blurred = image.blurred
       },
       fetchPolicy: 'cache-and-network',
     },

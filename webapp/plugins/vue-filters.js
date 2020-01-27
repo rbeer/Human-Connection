@@ -83,6 +83,7 @@ export default ({ app = {} }) => {
     },
     proxyApiUrl: url => {
       if (!url) return url
+      url = url.url || url
       return url.startsWith('/') ? url.replace('/', '/api/') : url
     },
   })

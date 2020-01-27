@@ -236,8 +236,6 @@ export default {
     ...Resolver('User', {
       undefinedToNull: [
         'actorId',
-        'avatar',
-        'coverImg',
         'deleted',
         'disabled',
         'locationName',
@@ -271,6 +269,7 @@ export default {
         badgesCount: '<-[:REWARDED]-(related:Badge)',
       },
       hasOne: {
+        avatar: '-[:AVATAR_IMAGE]->(related:Image)',
         invitedBy: '<-[:INVITED]-(related:User)',
         location: '-[:IS_IN]->(related:Location)',
       },

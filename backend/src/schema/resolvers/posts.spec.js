@@ -897,7 +897,9 @@ describe('DeletePost', () => {
         deleted
         content
         contentExcerpt
-        image
+        image {
+          url
+        }
         comments {
           deleted
           content
@@ -915,9 +917,11 @@ describe('DeletePost', () => {
         id: 'p4711',
         title: 'I will be deleted',
         content: 'To be deleted',
-        image: 'path/to/some/image',
       },
       {
+        image: Factory.build('image', {
+          url: 'path/to/some/image',
+        }),
         author,
         categoryIds,
       },

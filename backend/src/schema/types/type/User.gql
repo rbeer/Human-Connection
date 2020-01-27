@@ -5,10 +5,6 @@ enum _UserOrdering {
   name_desc
   slug_asc
   slug_desc
-  avatar_asc
-  avatar_desc
-  coverImg_asc
-  coverImg_desc
   role_asc
   role_desc
   locationName_asc
@@ -29,8 +25,7 @@ type User {
   name: String
   email: String! @cypher(statement: "MATCH (this)-[: PRIMARY_EMAIL]->(e: EmailAddress) RETURN e.email")
   slug: String!
-  avatar: String
-  coverImg: String
+  avatar: Image @relation(name: "AVATAR_IMAGE", direction: "OUT")
   deleted: Boolean
   disabled: Boolean
   role: UserGroup!
@@ -160,8 +155,6 @@ type Query {
   email: String # admins need to search for a user sometimes
   name: String
   slug: String
-  avatar: String
-  coverImg: String
   role: UserGroup
   locationName: String
   about: String
@@ -198,7 +191,6 @@ type Mutation {
   email: String
   slug: String
   avatar: String
-  coverImg: String
   avatarUpload: Upload
   locationName: String
   about: String

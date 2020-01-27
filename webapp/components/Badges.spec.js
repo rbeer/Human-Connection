@@ -2,20 +2,33 @@ import { shallowMount } from '@vue/test-utils'
 import Badges from './Badges.vue'
 
 describe('Badges.vue', () => {
-  let wrapper
+  let propsData
 
   beforeEach(() => {
-    wrapper = shallowMount(Badges, {})
+    propsData = {}
   })
 
-  it('renders', () => {
-    expect(wrapper.is('div')).toBe(true)
-  })
+  describe('shallowMount', () => {
+    const Wrapper = () => {
+      return shallowMount(Badges, { propsData })
+    }
 
-  it('has class "hc-badges"', () => {
-    expect(wrapper.contains('.hc-badges')).toBe(true)
-  })
+    it('renders', () => {
+      expect(Wrapper().is('div')).toBe(true)
+    })
 
-  // TODO: add similar software tests for other components
-  // TODO: add more test cases in this file
+    it('has class "hc-badges"', () => {
+      expect(Wrapper().contains('.hc-badges')).toBe(true)
+    })
+
+    describe('given a badge', () => {
+      beforeEach(() => {
+        propsData.badges = [{ id: '1', icon: '/path/to/some/icon' }]
+      })
+
+      it('proxies badge icon, which is just a URL without metadata', () => {
+        expect(Wrapper().contains('img[src="/api/path/to/some/icon"]')).toBe(true)
+      })
+    })
+  })
 })

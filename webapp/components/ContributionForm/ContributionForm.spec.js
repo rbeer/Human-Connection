@@ -70,7 +70,7 @@ describe('ContributionForm.vue', () => {
     },
     url: 'someUrlToImage',
   }
-  const image = '/uploads/1562010976466-avataaars'
+  const image = { url: '/uploads/1562010976466-avataaars', aspectRatio: 1 }
   beforeEach(() => {
     mocks = {
       $t: jest.fn(),
@@ -199,10 +199,7 @@ describe('ContributionForm.vue', () => {
               language: 'en',
               id: null,
               categoryIds: ['cat12'],
-              imageUpload: null,
-              imageAspectRatio: null,
               image: null,
-              imageBlurred: false,
             },
           }
           postTitleInput = wrapper.find('.ds-input')
@@ -233,7 +230,7 @@ describe('ContributionForm.vue', () => {
         })
 
         it('supports adding a teaser image', async () => {
-          expectedParams.variables.imageUpload = imageUpload
+          expectedParams.variables.image = { upload: imageUpload }
           wrapper.find(TeaserImage).vm.$emit('addTeaserImage', imageUpload)
           await wrapper.find('form').trigger('submit')
           expect(mocks.$apollo.mutate).toHaveBeenCalledWith(expect.objectContaining(expectedParams))
@@ -314,7 +311,6 @@ describe('ContributionForm.vue', () => {
                 name: 'Democracy & Politics',
               },
             ],
-            imageAspectRatio: 1,
           },
         }
         wrapper = Wrapper()
@@ -360,8 +356,6 @@ describe('ContributionForm.vue', () => {
               id: propsData.contribution.id,
               categoryIds: ['cat12'],
               image,
-              imageUpload: null,
-              imageAspectRatio: 1,
             },
           }
         })
