@@ -225,7 +225,7 @@ export const updateUserMutation = () => {
       $allowEmbedIframes: Boolean
       $showShoutsPublicly: Boolean
       $termsAndConditionsAgreedVersion: String
-      $avatarUpload: Upload
+      $avatar: ImageInput
     ) {
       UpdateUser(
         id: $id
@@ -236,7 +236,7 @@ export const updateUserMutation = () => {
         allowEmbedIframes: $allowEmbedIframes
         showShoutsPublicly: $showShoutsPublicly
         termsAndConditionsAgreedVersion: $termsAndConditionsAgreedVersion
-        avatarUpload: $avatarUpload
+        avatar: $avatar
       ) {
         id
         slug

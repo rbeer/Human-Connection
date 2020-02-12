@@ -1,7 +1,7 @@
 import { neo4jgraphql } from 'neo4j-graphql-js'
-import fileUpload from './fileUpload'
 import { getNeode } from '../../db/neo4j'
 import { UserInputError, ForbiddenError } from 'apollo-server'
+import { createImage } from './images/images'
 import Resolver from './helpers/Resolver'
 import log from './helpers/databaseLogger'
 import createOrUpdateLocations from './users/location'
@@ -140,6 +140,8 @@ export default {
     },
     UpdateUser: async (_parent, params, context, _resolveInfo) => {
       const { termsAndConditionsAgreedVersion } = params
+      const { avatar: avatarInput } = params
+      delete params.avatar
       if (termsAndConditionsAgreedVersion) {
         const regEx = new RegExp(/^[0-9]+\.[0-9]+\.[0-9]+$/g)
         if (!regEx.test(termsAndConditionsAgreedVersion)) {
@@ -147,7 +149,6 @@ export default {
         }
         params.termsAndConditionsAgreedAt = new Date().toISOString()
       }
-      params = await fileUpload(params, { file: 'avatarUpload', url: 'avatar' })
       const session = context.driver.session()
 
       const writeTxResultPromise = session.writeTransaction(async transaction => {
@@ -156,14 +157,26 @@ export default {
             MATCH (user:User {id: $params.id})
             SET user += $params
             SET user.updatedAt = toString(datetime())
-            RETURN user
+            RETURN user {.*}
           `,
           { params },
         )
-        return updateUserTransactionResponse.records.map(record => record.get('user').properties)
+        const [user] = updateUserTransactionResponse.records.map(record => record.get('user'))
+        if (avatarInput) {
+          const image = await createImage({ imageInput: avatarInput, transaction })
+          await transaction.run(
+            `
+            MATCH (user:User {id: $user.id})
+            MATCH (image:Image {url: $image.url})
+            MERGE (user)-[:AVATAR_IMAGE]->(image)
+          `,
+            { user, image },
+          )
+        }
+        return user
       })
       try {
-        const [user] = await writeTxResultPromise
+        const user = await writeTxResultPromise
         await createOrUpdateLocations(params.id, params.locationName, session)
         return user
       } catch (error) {

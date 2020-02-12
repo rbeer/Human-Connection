@@ -190,8 +190,7 @@ type Mutation {
   name: String
   email: String
   slug: String
-  avatar: String
-  avatarUpload: Upload
+  avatar: ImageInput
   locationName: String
   about: String
   termsAndConditionsAgreedVersion: String
