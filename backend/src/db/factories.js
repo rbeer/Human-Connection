@@ -56,7 +56,7 @@ Factory.define('image')
     return neode.create('Image', buildObject)
   })
 
-Factory.define('userWithoutEmailAddress')
+Factory.define('basicUser')
   .option('password', '1234')
   .attrs({
     id: uuid,
@@ -76,12 +76,15 @@ Factory.define('userWithoutEmailAddress')
   .attr('encryptedPassword', ['password'], password => {
     return hashSync(password, 10)
   })
+
+Factory.define('userWithoutEmailAddress')
+  .extend('basicUser')
   .after(async (buildObject, options) => {
     return neode.create('User', buildObject)
   })
 
 Factory.define('user')
-  .extend('userWithoutEmailAddress')
+  .extend('basicUser')
   .option('email', faker.internet.exampleEmail)
   .option('avatar', () =>
     Factory.build('image', {
@@ -90,7 +93,7 @@ Factory.define('user')
   )
   .after(async (buildObject, options) => {
     const [user, email, avatar] = await Promise.all([
-      buildObject,
+      neode.create('User', buildObject),
       neode.create('EmailAddress', { email: options.email }),
       options.avatar,
     ])
