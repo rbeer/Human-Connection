@@ -82,8 +82,8 @@ export default ({ app = {} }) => {
       return contentExcerpt
     },
     proxyApiUrl: url => {
+      url = url && (url.url || url)
       if (!url) return url
-      url = url.url || url
       return url.startsWith('/') ? url.replace('/', '/api/') : url
     },
   })
