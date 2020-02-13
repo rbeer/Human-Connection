@@ -4,8 +4,15 @@ import slugify from 'slug'
 import { hashSync } from 'bcryptjs'
 import { Factory } from 'rosie'
 import { getDriver, getNeode } from './neo4j'
+import CONFIG from '../config/index.js'
 
 const neode = getNeode()
+
+const uniqueImageUrl = imageUrl => {
+  const newUrl = new URL(imageUrl, CONFIG.CLIENT_URI)
+  newUrl.search = `random=${uuid()}` // make it unique
+  return newUrl.toString()
+}
 
 export const cleanDatabase = async (options = {}) => {
   const { driver = getDriver() } = options
@@ -44,6 +51,8 @@ Factory.define('image')
   .attr('aspectRatio', 1)
   .attr('alt', faker.lorem.sentence)
   .after((buildObject, options) => {
+    const { url: imageUrl } = buildObject
+    if (imageUrl) buildObject.url = uniqueImageUrl(imageUrl)
     return neode.create('Image', buildObject)
   })
 

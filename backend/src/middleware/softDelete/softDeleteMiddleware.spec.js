@@ -267,7 +267,9 @@ describe('softDeleteMiddleware', () => {
         it('displays about', () =>
           expect(subject.about).toEqual('This self description is very offensive'))
         it('displays avatar', () =>
-          expect(subject.avatar).toEqual({ url: '/some/offensive/avatar.jpg' }))
+          expect(subject.avatar).toEqual({
+            url: expect.stringContaining('/some/offensive/avatar.jpg'),
+          }))
       })
 
       describe('Post', () => {
@@ -280,7 +282,9 @@ describe('softDeleteMiddleware', () => {
         it('displays contentExcerpt', () =>
           expect(subject.contentExcerpt).toEqual('This is an offensive post content'))
         it('displays image', () =>
-          expect(subject.image).toEqual({ url: '/some/offensive/image.jpg' }))
+          expect(subject.image).toEqual({
+            url: expect.stringContaining('/some/offensive/image.jpg'),
+          }))
       })
 
       describe('Comment', () => {
