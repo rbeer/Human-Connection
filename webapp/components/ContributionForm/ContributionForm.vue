@@ -134,6 +134,7 @@ import PostMutations from '~/graphql/PostMutations.js'
 import HcCategoriesSelect from '~/components/CategoriesSelect/CategoriesSelect'
 import HcTeaserImage from '~/components/TeaserImage/TeaserImage'
 import UserTeaser from '~/components/UserTeaser/UserTeaser'
+import pick from 'lodash/pick'
 
 export default {
   components: {
@@ -167,6 +168,7 @@ export default {
       form.title = this.contribution.title
       form.content = this.contribution.content
       form.image = this.contribution.image || {}
+      form.blurImage = form.image.blurred
       form.language =
         this.contribution && this.contribution.language
           ? languageOptions.find(o => this.contribution.language === o.value)
@@ -191,6 +193,7 @@ export default {
           },
         },
         language: { required: true },
+        image: { required: false },
         blurImage: { required: false },
       },
       languageOptions,
@@ -217,15 +220,16 @@ export default {
   },
   methods: {
     submit() {
-      const {
+      let {
         language: { value: language },
         title,
         content,
-        image,
+        image = {},
         categoryIds,
         blurImage,
       } = this.form
-      if (image) image.blurred = blurImage
+      image.blurred = blurImage
+      image = pick(image, ['blurred', 'upload', 'aspectRatio'])
       this.loading = true
       this.$apollo
         .mutate({

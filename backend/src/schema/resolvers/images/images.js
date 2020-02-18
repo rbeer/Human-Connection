@@ -38,4 +38,7 @@ export async function createImage({ imageInput, transaction, fileUpload = localF
   return image
 }
 
-export function deleteImage({ image, transaction }) {}
+export function deleteImage({ image, transaction }) {
+  const { url } = image
+  return transaction.run(`MATCH (image:Image {url: $url}) DETACH DELETE image`, { url })
+}

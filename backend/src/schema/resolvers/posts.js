@@ -2,7 +2,7 @@ import uuid from 'uuid/v4'
 import { neo4jgraphql } from 'neo4j-graphql-js'
 import { isEmpty } from 'lodash'
 import { UserInputError } from 'apollo-server'
-import { createImage } from './images/images'
+import { deleteImage, createImage } from './images/images'
 import Resolver from './helpers/Resolver'
 import { filterForMutedUsers } from './helpers/filterForMutedUsers'
 
@@ -167,15 +167,35 @@ export default {
           )
           const [post] = updatePostTransactionResponse.records.map(record => record.get('post'))
           if (imageInput) {
-            const image = await createImage({ imageInput, transaction })
-            await transaction.run(
-              `
-            MATCH (post:Post {id: $post.id})
-            MATCH (image:Image {url: $image.url})
-            MERGE (post)-[:TEASER_IMAGE]->(image)
-          `,
-              { post, image },
-            )
+            if (imageInput.upload) {
+              const previousImageResponse = await transaction.run(
+                `
+                MATCH (post:Post {id: $post.id})-[:TEASER_IMAGE]->(image:Image)
+                RETURN image {.*}`,
+                { post },
+              )
+              const [previousImage] = previousImageResponse.records.map(r => r.get('image'))
+              if (previousImage) await deleteImage({ image: previousImage, transaction })
+              const image = await createImage({ imageInput, transaction })
+              await transaction.run(
+                `
+                MATCH (post:Post {id: $post.id})
+                MATCH (image:Image {url: $image.url})
+                MERGE (post)-[:TEASER_IMAGE]->(image)
+              `,
+                { post, image },
+              )
+            } else {
+              const { alt, blurred, aspectRatio } = imageInput
+              const params = { alt, blurred, aspectRatio }
+              await transaction.run(
+                `
+                MATCH (post:Post {id: $post.id})-[:TEASER_IMAGE]->(image:Image)
+                SET image += $params
+              `,
+                { post, params },
+              )
+            }
           }
           return post
         })
