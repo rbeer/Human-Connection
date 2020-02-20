@@ -1,7 +1,7 @@
 import path from 'path'
 import uuid from 'uuid/v4'
 import slug from 'slug'
-import { createWriteStream } from 'fs'
+import { existsSync, unlinkSync, createWriteStream } from 'fs'
 
 // const widths = [34, 160, 320, 640, 1024]
 
@@ -40,5 +40,7 @@ export async function createImage({ imageInput, transaction, fileUpload = localF
 
 export function deleteImage({ image, transaction }) {
   const { url } = image
+  const location = `public${url}`
+  if (existsSync(location)) unlinkSync(location)
   return transaction.run(`MATCH (image:Image {url: $url}) DETACH DELETE image`, { url })
 }
