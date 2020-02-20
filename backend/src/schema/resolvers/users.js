@@ -1,7 +1,7 @@
 import { neo4jgraphql } from 'neo4j-graphql-js'
 import { getNeode } from '../../db/neo4j'
 import { UserInputError, ForbiddenError } from 'apollo-server'
-import { createImage } from './images/images'
+import { deleteImage, createImage } from './images/images'
 import Resolver from './helpers/Resolver'
 import log from './helpers/databaseLogger'
 import createOrUpdateLocations from './users/location'
@@ -163,15 +163,35 @@ export default {
         )
         const [user] = updateUserTransactionResponse.records.map(record => record.get('user'))
         if (avatarInput) {
-          const image = await createImage({ imageInput: avatarInput, transaction })
-          await transaction.run(
-            `
-            MATCH (user:User {id: $user.id})
-            MATCH (image:Image {url: $image.url})
-            MERGE (user)-[:AVATAR_IMAGE]->(image)
-          `,
-            { user, image },
-          )
+          if (avatarInput.upload) {
+            const previousImageResponse = await transaction.run(
+              `
+              MATCH (user:User {id: $user.id})-[:AVATAR_IMAGE]->(image:Image)
+              RETURN image {.*}`,
+              { user },
+            )
+            const [previousImage] = previousImageResponse.records.map(r => r.get('image'))
+            if (previousImage) await deleteImage({ image: previousImage, transaction })
+            const image = await createImage({ imageInput: avatarInput, transaction })
+            await transaction.run(
+              `
+              MATCH (user:User {id: $user.id})
+              MATCH (image:Image {url: $image.url})
+              MERGE (user)-[:AVATAR_IMAGE]->(image)
+            `,
+              { user, image },
+            )
+          } else {
+            const { alt, blurred, aspectRatio } = avatarInput
+            const avatarParams = { alt, blurred, aspectRatio }
+            await transaction.run(
+              `
+                MATCH (user:User {id: $user.id})-[:AVATAR_IMAGE]->(image:Image)
+                SET image += $avatarParams
+              `,
+              { user, avatarParams },
+            )
+          }
         }
         return user
       })
